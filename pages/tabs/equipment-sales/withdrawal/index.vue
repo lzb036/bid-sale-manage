@@ -110,21 +110,30 @@
             :key="item.id"
             class="record-item settle-item"
           >
-            <view class="item-left settle-left">
-              <text class="settle-time-label">结算时间</text>
-              <text class="item-time">{{ formatTime(item.settleTime) }}</text>
+            <view class="settle-main">
+              <view class="settle-block settle-time-block">
+                <text class="settle-meta-label">结算时间</text>
+                <text class="settle-time-value">{{ formatTime(item.settleTime) }}</text>
+              </view>
+
+              <view class="settle-block settle-amount-block">
+                <text class="settle-meta-label">结算金额</text>
+                <text class="amount-value settle-amount">+¥{{ formatAmount(item.amount) }}</text>
+              </view>
             </view>
 
-            <view class="item-center">
-              <text class="fee-label">确认状态</text>
-              <text :class="['settle-status', item.confirmed ? 'confirmed' : 'pending']">
-                {{ item.confirmed ? '已确认' : '待确认' }}
-              </text>
-            </view>
+            <view class="settle-footer">
+              <view class="settle-total-card">
+                <text class="settle-total-label">结算总额</text>
+                <text class="settle-total-value">¥{{ formatNullableAmount(item.settleTotal) }}</text>
+              </view>
 
-            <view class="item-right">
-              <text class="amount-value settle-amount">+¥{{ formatAmount(item.amount) }}</text>
-              <text class="total-after">总额 ¥{{ formatNullableAmount(item.settleTotal) }}</text>
+              <view class="settle-status-wrap">
+                <text class="settle-meta-label">确认状态</text>
+                <text :class="['settle-status', item.confirmed ? 'confirmed' : 'pending']">
+                  {{ item.confirmed ? '已确认' : '待确认' }}
+                </text>
+              </view>
             </view>
           </view>
 
@@ -581,45 +590,113 @@ function formatTime(time: string): string {
 }
 
 .settle-item {
-  .settle-left {
-    width: 180rpx;
+  display: block;
+  padding: 26rpx 28rpx;
+  border: 1rpx solid #ECFDF5;
+  box-shadow: 0 12rpx 28rpx rgba(15, 23, 42, 0.05);
+
+  .settle-main {
+    display: flex;
     align-items: flex-start;
+    justify-content: space-between;
+    gap: 24rpx;
+    margin-bottom: 22rpx;
+  }
 
-    .settle-time-label {
-      font-size: 22rpx;
-      color: #9CA3AF;
-      line-height: 1;
-    }
+  .settle-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10rpx;
+    min-width: 0;
+  }
 
-    .item-time {
-      text-align: left;
-      line-height: 1.4;
-      word-break: break-all;
-    }
+  .settle-time-block {
+    flex: 1;
+  }
+
+  .settle-amount-block {
+    align-items: flex-end;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .settle-meta-label {
+    font-size: 22rpx;
+    color: #94A3B8;
+    line-height: 1;
+    letter-spacing: 1rpx;
+  }
+
+  .settle-time-value {
+    font-size: 24rpx;
+    color: #475569;
+    line-height: 1.5;
+    word-break: break-all;
+  }
+
+  .settle-amount {
+    color: #10B981;
+    font-size: 36rpx;
+    line-height: 1.1;
+  }
+
+  .settle-footer {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 18rpx;
+  }
+
+  .settle-total-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8rpx;
+    padding: 18rpx 20rpx;
+    border-radius: 14rpx;
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  }
+
+  .settle-total-label {
+    font-size: 22rpx;
+    color: #94A3B8;
+  }
+
+  .settle-total-value {
+    font-size: 28rpx;
+    font-weight: 700;
+    color: #0F172A;
+  }
+
+  .settle-status-wrap {
+    width: 180rpx;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 10rpx;
   }
 
   .settle-status {
-    font-size: 26rpx;
-    font-weight: 600;
-    padding: 8rpx 16rpx;
-    border-radius: 10rpx;
+    min-width: 132rpx;
+    font-size: 24rpx;
+    font-weight: 700;
+    padding: 12rpx 18rpx;
+    border-radius: 14rpx;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
     &.confirmed {
-      background-color: #ECFDF5;
+      background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
       color: #059669;
     }
 
     &.pending {
-      background-color: #FEF3C7;
-      color: #D97706;
+      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+      color: #B45309;
     }
-  }
-
-  .settle-amount {
-    color: #10B981;
   }
 }
 
