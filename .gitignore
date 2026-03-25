@@ -1,0 +1,32 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.svn/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Build / cache
+dist/
+coverage/
+.cache/
+unpackage/
+omp.cache
+.hbuilderx/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp

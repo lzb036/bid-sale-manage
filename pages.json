@@ -1,0 +1,144 @@
+{
+	"pages": [
+		{
+			"path": "pages/login/index",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/baseurl/index",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/login/phone/index",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/login/qrcode/index",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/login/download/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "扫码下载"
+			}
+		},
+		{
+			"path": "pages/login/register/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "注册"
+			}
+		},
+		{
+			"path": "pages/tabs/equipment-sales/overview/index",
+			"style": {
+				"navigationBarTitleText": "数据概览",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/tabs/equipment-sales/account/index",
+			"style": {
+				"navigationBarTitleText": "账号管理",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/tabs/equipment-sales/account/initialize/index",
+			"style": {
+				"navigationBarTitleText": "初始化",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/tabs/equipment-sales/sync/index",
+			"style": {
+				"navigationBarTitleText": "数据同步",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/tabs/equipment-sales/transactions/index",
+			"style": {
+				"navigationBarTitleText": "交易记录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/tabs/equipment-sales/records/index",
+			"style": {
+				"navigationBarTitleText": "饰品记录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/tabs/equipment-sales/withdrawal/index",
+			"style": {
+				"navigationBarTitleText": "我的提现",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/tabs/equipment-sales/inventory/index",
+			"style": {
+				"navigationBarTitleText": "饰品库存",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/tabs/equipment-sales/inventory/detail/index",
+			"style": {
+				"navigationBarTitleText": "饰品详情",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/platform-login/yyyp/index",
+			"style": {
+				"navigationBarTitleText": "悠悠有品登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/platform-login/buff/index",
+			"style": {
+				"navigationBarTitleText": "网易 BUFF 登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/platform-login/steam/index",
+			"style": {
+				"navigationBarTitleText": "Steam 认证",
+				"navigationStyle": "custom"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"uniIdRouter": {}
+}
