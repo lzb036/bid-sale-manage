@@ -17,11 +17,11 @@
           我的结算
         </text>
       </view>
-      <text class="header-subtitle">共 {{ total }} 条记录</text>
+      <text class="header-subtitle">共 {{ displayTotal }} 条记录</text>
     </view>
 
     <!-- 同步操作区域 -->
-    <view class="sync-section">
+    <view v-if="currentTab === 0" class="sync-section">
       <view class="sync-buttons">
         <view
           class="sync-btn yyyp-btn"
@@ -52,7 +52,7 @@
       @scrolltolower="onLoadMore"
     >
       <!-- 骨架屏 -->
-      <view v-if="loading && list.length === 0" class="loading-container">
+      <view v-if="loading && currentListLength === 0" class="loading-container">
         <view v-for="i in 6" :key="i" class="skeleton-item">
           <view class="skeleton-left">
             <view class="skeleton-line long"></view>
@@ -66,43 +66,78 @@
 
       <!-- 列表内容 -->
       <template v-else>
-        <view
-          v-for="item in list"
-          :key="item.id"
-          class="record-item"
-        >
-          <!-- 左侧：市场图标 + 时间 -->
-          <view class="item-left">
-            <view :class="['market-badge', item.market]">
-              <text class="market-text">{{ formatMarket(item.market) }}</text>
+        <template v-if="currentTab === 0">
+          <view
+            v-for="item in withdrawList"
+            :key="item.id"
+            class="record-item"
+          >
+            <!-- 左侧：市场图标 + 时间 -->
+            <view class="item-left">
+              <view :class="['market-badge', item.market]">
+                <text class="market-text">{{ formatMarket(item.market) }}</text>
+              </view>
+              <text class="item-time">{{ formatTime(item.withdrawTime) }}</text>
             </view>
-            <text class="item-time">{{ formatTime(item.withdrawTime) }}</text>
+
+            <!-- 中间：手续费 -->
+            <view class="item-center">
+              <text class="fee-label">手续费</text>
+              <text class="fee-value">¥{{ formatAmount(item.fee) }}</text>
+            </view>
+
+            <!-- 右侧：提现金额 -->
+            <view class="item-right">
+              <text class="amount-value">-¥{{ formatAmount(item.amount) }}</text>
+              <text class="total-after">余 ¥{{ formatAmount(item.withdrawTotal) }}</text>
+            </view>
           </view>
 
-          <!-- 中间：手续费 -->
-          <view class="item-center">
-            <text class="fee-label">手续费</text>
-            <text class="fee-value">¥{{ formatAmount(item.fee) }}</text>
+          <view v-if="withdrawList.length === 0" class="empty-state">
+            <text class="empty-icon">💸</text>
+            <text class="empty-text">暂无提现记录</text>
           </view>
 
-          <!-- 右侧：提现金额 -->
-          <view class="item-right">
-            <text class="amount-value">-¥{{ formatAmount(item.amount) }}</text>
-            <text class="total-after">余 ¥{{ formatAmount(item.withdrawTotal) }}</text>
+          <view v-if="withdrawList.length > 0" class="load-more">
+            <text v-if="loading" class="load-more-text">加载中...</text>
+            <text v-else-if="withdrawFinished" class="load-more-text">已加载全部</text>
           </view>
-        </view>
+        </template>
 
-        <!-- 空状态 -->
-        <view v-if="list.length === 0" class="empty-state">
-          <text class="empty-icon">💸</text>
-          <text class="empty-text">暂无提现记录</text>
-        </view>
+        <template v-else>
+          <view
+            v-for="item in settleList"
+            :key="item.id"
+            class="record-item settle-item"
+          >
+            <view class="item-left settle-left">
+              <text class="settle-time-label">结算时间</text>
+              <text class="item-time">{{ formatTime(item.settleTime) }}</text>
+            </view>
 
-        <!-- 加载更多 -->
-        <view v-if="list.length > 0" class="load-more">
-          <text v-if="loading" class="load-more-text">加载中...</text>
-          <text v-else-if="finished" class="load-more-text">已加载全部</text>
-        </view>
+            <view class="item-center">
+              <text class="fee-label">确认状态</text>
+              <text :class="['settle-status', item.confirmed ? 'confirmed' : 'pending']">
+                {{ item.confirmed ? '已确认' : '待确认' }}
+              </text>
+            </view>
+
+            <view class="item-right">
+              <text class="amount-value settle-amount">+¥{{ formatAmount(item.amount) }}</text>
+              <text class="total-after">总额 ¥{{ formatNullableAmount(item.settleTotal) }}</text>
+            </view>
+          </view>
+
+          <view v-if="settleList.length === 0" class="empty-state">
+            <text class="empty-icon">💰</text>
+            <text class="empty-text">暂无结算记录</text>
+          </view>
+
+          <view v-if="settleList.length > 0" class="load-more">
+            <text v-if="loading" class="load-more-text">加载中...</text>
+            <text v-else-if="settleFinished" class="load-more-text">已加载全部</text>
+          </view>
+        </template>
 
         <!-- tabBar 占位 -->
         <view style="height: 120rpx;"></view>
@@ -117,7 +152,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
+import { getSettleApi } from '@/api/modules/equipment-sales/settle.service'
 import { getWithdrawApi } from '@/api/modules/equipment-sales/withdraw.service'
+import type { SettleRecord } from '@/api/modules/equipment-sales/interface/settleModel'
 import type { WithdrawRecord } from '@/api/modules/equipment-sales/interface/withdrawModel'
 import EquipmentTabbar from '@/components/equipment-tabbar/EquipmentTabbar.vue'
 import { WithdrawSyncService } from '@/utils/sync-service'
@@ -129,16 +166,22 @@ const appStore = useAppStore()
 // 当前选中的 tab
 const currentTab = ref(0)
 
-// 列表数据
-const list = ref<WithdrawRecord[]>([])
+// 提现列表数据
+const withdrawList = ref<WithdrawRecord[]>([])
+const withdrawPage = ref(1)
+const withdrawFinished = ref(false)
+const withdrawTotal = ref(0)
+
+// 结算列表数据
+const settleList = ref<SettleRecord[]>([])
+const settlePage = ref(1)
+const settleFinished = ref(false)
+const settleTotal = ref(0)
+
 const loading = ref(false)
 const refreshing = ref(false)
-const finished = ref(false)
 
-// 分页
-const page = ref(1)
-const pageSize = ref(20)
-const total = ref(0)
+const pageSize = 20
 
 // 同步状态
 const syncingYyyp = ref(false)
@@ -146,44 +189,78 @@ const syncingBuff = ref(false)
 
 const equipmentSalesStore = useEquipmentSalesStore()
 const defaultSteamId = computed(() => equipmentSalesStore.defaultSteamId)
+const displayTotal = computed(() => currentTab.value === 0 ? withdrawTotal.value : settleTotal.value)
+const currentListLength = computed(() => currentTab.value === 0 ? withdrawList.value.length : settleList.value.length)
 
 
 onLoad(() => {
-  loadData()
+  loadData(true)
 })
 
 /**
  * 切换 tab
  */
 function switchTab(index: number) {
+  if (currentTab.value === index) return
   currentTab.value = index
   // 切换 tab 后重新加载数据
   loadData(true)
 }
 
 /**
- * 加载数据
+ * 加载当前 tab 数据
  */
 async function loadData(isRefresh = false) {
   if (loading.value) return
-  if (!isRefresh && finished.value) return
-
-  if (isRefresh) {
-    page.value = 1
-    finished.value = false
-  }
+  if (!isRefresh && currentTab.value === 0 && withdrawFinished.value) return
+  if (!isRefresh && currentTab.value === 1 && settleFinished.value) return
 
   loading.value = true
   try {
-    const res = await getWithdrawApi({ page: page.value, pageSize: pageSize.value })
-    const newList = res?.list ?? []
-    list.value = isRefresh ? newList : [...list.value, ...newList]
-    total.value = res?.pager?.total ?? 0
-    finished.value = list.value.length >= total.value
-    if (!isRefresh) page.value++
+    if (currentTab.value === 0) {
+      await loadWithdrawData(isRefresh)
+    } else {
+      await loadSettleData(isRefresh)
+    }
   } finally {
     loading.value = false
   }
+}
+
+async function loadWithdrawData(isRefresh = false) {
+  if (isRefresh) {
+    withdrawPage.value = 1
+    withdrawFinished.value = false
+  }
+
+  const res = await getWithdrawApi({ page: withdrawPage.value, pageSize })
+  const newList = res?.list ?? []
+  const pager = res?.pager
+
+  withdrawList.value = isRefresh ? newList : [...withdrawList.value, ...newList]
+  withdrawTotal.value = pager?.total ?? withdrawTotal.value
+  withdrawFinished.value = pager
+    ? pager.current >= pager.pages || withdrawList.value.length >= pager.total
+    : newList.length < pageSize
+  withdrawPage.value = (pager?.current ?? withdrawPage.value) + 1
+}
+
+async function loadSettleData(isRefresh = false) {
+  if (isRefresh) {
+    settlePage.value = 1
+    settleFinished.value = false
+  }
+
+  const res = await getSettleApi({ page: settlePage.value, pageSize })
+  const newList = res?.list ?? []
+  const pager = res?.pager
+
+  settleList.value = isRefresh ? newList : [...settleList.value, ...newList]
+  settleTotal.value = pager?.total ?? settleTotal.value
+  settleFinished.value = pager
+    ? pager.current >= pager.pages || settleList.value.length >= pager.total
+    : newList.length < pageSize
+  settlePage.value = (pager?.current ?? settlePage.value) + 1
 }
 
 /**
@@ -253,6 +330,13 @@ async function onSyncBuff() {
  */
 function formatAmount(amount: number): string {
   return amount.toFixed(2)
+}
+
+/**
+ * 格式化可空金额
+ */
+function formatNullableAmount(amount: number | null): string {
+  return amount === null ? '--' : amount.toFixed(2)
 }
 
 /**
@@ -493,6 +577,49 @@ function formatTime(time: string): string {
       font-size: 22rpx;
       color: #9CA3AF;
     }
+  }
+}
+
+.settle-item {
+  .settle-left {
+    width: 180rpx;
+    align-items: flex-start;
+
+    .settle-time-label {
+      font-size: 22rpx;
+      color: #9CA3AF;
+      line-height: 1;
+    }
+
+    .item-time {
+      text-align: left;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+  }
+
+  .settle-status {
+    font-size: 26rpx;
+    font-weight: 600;
+    padding: 8rpx 16rpx;
+    border-radius: 10rpx;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &.confirmed {
+      background-color: #ECFDF5;
+      color: #059669;
+    }
+
+    &.pending {
+      background-color: #FEF3C7;
+      color: #D97706;
+    }
+  }
+
+  .settle-amount {
+    color: #10B981;
   }
 }
 
